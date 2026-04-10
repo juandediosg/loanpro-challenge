@@ -77,12 +77,6 @@ TEST_ENV=dev pytest -v
 TEST_ENV=prod pytest -v
 ```
 
-### View HTML Report
-
-```bash
-open reports/report.html
-```
-
 ---
 
 ## CI/CD
