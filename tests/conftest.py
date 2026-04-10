@@ -43,3 +43,4 @@ def cleanup(auth_headers, sample_user):
             f"{BASE_URL}/{env}/users/{email}",
             headers=auth_headers
         )
+    print(f" Cleanup completed for {email}")
