@@ -1,0 +1,63 @@
+name: API Test Suite
+
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+
+jobs:
+  test:
+    name: "Tests - ${{ matrix.environment }}"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [dev, prod]
+
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+
+      - name: Start API container
+        run: |
+          docker run -d -p 3000:3000 \
+            ghcr.io/danielsilva-loanpro/sdet-interview-challenge:latest
+          sleep 5
+          curl http://localhost:3000/dev/users
+
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+
+      - name: Run tests (${{ matrix.environment }})
+        env:
+          BASE_URL: http://localhost:3000
+          AUTH_TOKEN: mysecrettoken
+          TEST_ENV: ${{ matrix.environment }}
+        run: |
+          mkdir -p reports
+          pytest tests/ -v \
+            --html=reports/report-${{ matrix.environment }}.html \
+            --self-contained-html
+        continue-on-error: true
+
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: report-${{ matrix.environment }}
+          path: reports/report-${{ matrix.environment }}.html
